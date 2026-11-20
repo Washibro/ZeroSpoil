@@ -9,137 +9,151 @@
   <img src="SS4.png" width="60%">
 </p>
 
-**AI-Powered B2B Perishable Supply-Chain & Food Waste Reduction Platform for Dhaka Supermarkets**  
-*Smart FEFO Inventory Auditing, Dual-Layer Vision Ripeness Grading & Hybrid RAG Copilot*
+<h3 align="center">Cut food waste in Dhaka supermarkets with smarter stock tracking, AI produce scanning, and a helpful assistant.</h3>
 
----
+<p align="center">
+  FEFO inventory audits · Two-layer ripeness scanning · Citation-backed AI copilot
+</p>
 
-## 📖 1. Executive Summary & Product Mission
+## Overview
 
-Perishable food waste across urban retail supply chains in Dhaka—spanning dairy, leafy greens, tropical fruits, poultry, and fish—results from fragmented shelf-life visibility, delayed markdowns, cold-chain breaks, and manual stock reconciliation.
+Every day, a huge amount of fresh food, from leafy greens and tropical fruits to dairy, poultry, and fish, is wasted before it ever reaches someone's table. In many cases, the food is still perfectly usable. The problem is that suppliers and retailers often don't know which products are at risk, when to sell them, or when to offer discounts. Without timely information and proper inventory management, good food ends up going to waste.
 
-**ZeroSpoil** is an enterprise-ready B2B cold-chain operations platform built for Dhaka supermarket networks (**Shwapno Dhanmondi 27**, **Agora Gulshan 2**, **Meena Bazar Uttara**, and **Unimart Banani**). It unifies real-time PostgreSQL 16 inventory auditing, automated FEFO dispatch recommendations, optical ripeness inspection, and a citation-backed AI assistant to drive a measurable **30% food waste reduction benchmark**.
+ZeroSpoil, developed for the Food Waste Zero challenge, aims to change that. It's an AI-powered platform that helps suppliers and retailers make smarter decisions before food goes bad. By tracking shelf life, prioritizing products through FEFO (First-Expired, First-Out), recommending timely discounts, and using AI-powered ripeness detection, ZeroSpoil helps move products to the right place at the right time.
 
-### Core Value Proposition
+Our goal is simple: prevent food waste before it happens and achieve a target of at least 30% reduction in preventable food waste through smarter, data-driven decisions.
 
-1. **Universal Inventory Reconciliation Ledger:** Continuously verifies opening stock, deliveries, inter-store transfers, sales, waste, and returns against physical closing stock to catch shrinkage or overstock discrepancies automatically.
-2. **FEFO Batch Intelligence & Dynamic Markdowns:** Tracks perishable batches approaching the **48-hour critical expiry threshold**, quantifying BDT value at risk and queuing targeted clearance discounts or branch-to-branch rebalancing.
-3. **Dual-Layer Vision Ripeness & Spoilage Scanner:** Combines sub-10ms zero-token offline HSV colorimetry with **`gemini-3.8-flash`** multimodal semantic inspection via live camera or photo upload, syncing updated shelf life directly back to PostgreSQL.
-4. **Ask ZeroSpoil (Hybrid RAG + Read-Only MCP):** Answers operational queries in plain language by combining **USDA FoodKeeper** cold-chain rules with live PostgreSQL stock queries—complete with strict inline citations and zero hallucinated stock counts.
-5. **Multi-Agent Coordination Audit Trail:** Logs every forecasting, dynamic pricing, inter-store rebalance, and vision inspection decision chronologically for full operational transparency.
+## What It Does
 
-### ⚖️ Critical Boundaries & Governance Guardrails
+**Inventory reconciliation.** Every day, ZeroSpoil checks opening stock, deliveries, transfers, sales, waste, and returns against the real closing count. If the numbers do not match, it flags shrinkage or overstock right away.
 
-- **Human-in-the-Loop Sign-Off (M-09):** Autonomous agents never silently alter store prices or dispatch trucks. All markdowns and inter-store transfer proposals require explicit supplier **Approve / Reject** confirmation in the Smart Allocation Hub.
-- **Strictly Read-Only MCP Layer:** The `zerospoil-inventory-mcp` server is restricted to `SELECT`-only database queries and static guideline lookups, ensuring the RAG copilot cannot mutate live inventory records.
-- **Zero-Hallucination Citation Policy:** Every factual inventory or cold-chain answer preserves inline `[PostgreSQL Store Query]` and `[USDA FoodKeeper Guideline ...]` citations, falling back to verified deterministic telemetry if external LLM APIs are unavailable.
+**FEFO batch tracking and smart markdowns.** The platform watches batches that will expire within 48 hours, shows the value at risk in BDT, and suggests discounts or store-to-store transfers before the stock is lost.
 
----
+**Two-layer produce scanner.** Point a camera at a crate or upload a photo. A fast offline color check runs first, then `gemini-3.8-flash` confirms what the item is and how ripe it is. The new shelf life is saved straight to the database.
 
-## ⚙️ 2. System Architecture & Technology Stack
+**Ask ZeroSpoil.** Ask a question in plain language and get an answer built from USDA FoodKeeper rules and live PostgreSQL stock data, with a citation on every fact.
 
-- **Frontend:** React (Vite), Tailwind CSS, Recharts, HTML5 `<canvas>` (client-side colorimetry pre-check).
-- **Backend:** Python 3, FastAPI, Uvicorn, Pydantic, JWT Authentication.
-- **Database:** PostgreSQL 16 (Local PostgreSQL / Neon.tech Serverless Cloud).
-- **AI, RAG & Vision:** LangGraph, Google GenAI SDK (`gemini-3.8-flash` $\rightarrow$ `gemini-3.5-flash-lite` fallback loop), Python FastMCP, Scikit-learn (TF-IDF), NetworkX, Pillow, NumPy.
+**Full audit trail.** Every forecast, price suggestion, transfer proposal, and vision check is logged in order, so teams can always see what happened and why.
 
-### Core Backend Engines & Logic
+## Built-In Safeguards
 
-1. **Universal Inventory Reconciliation Engine:**
-   - Audits every Dhaka branch in real time using the Universal Inventory Reconciliation Rule:
-     $$\text{Opening} + \text{Received} + \text{Transfers In} - \text{Sold} - \text{Waste} - \text{Returns} - \text{Transfers Out} = \text{Expected Closing}$$
-   - Compares $\text{Expected Closing}$ against $\text{Physical Closing}$ to flag `RECONCILED` vs. `OVERSTOCK / AUDIT` or shrinkage alerts.
+**People stay in control.** The system never changes prices or sends trucks on its own. Every markdown and transfer proposal needs a clear Approve or Reject from a supplier in the Smart Allocation Hub.
 
-2. **Dual-Layer Vision Inspection Pipeline (`backend/services/agents.py`):**
-   - **Layer 1 — Adaptive HSV Colorimetry (`<10ms`, Zero-Token):** Uses Pillow & NumPy with EXIF orientation correction, 8% border trimming, foreground saturation masking (ignoring white tissue/table backgrounds), and an **85th-percentile adaptive brightness baseline** so dim room lighting does not trigger false bruising alerts while protecting healthy red/crimson tomatoes and dark green produce.
-   - **Layer 2 — Multimodal Semantic Override (`gemini-3.8-flash`):** Inspects the image semantically to verify whether actual produce is present (rejecting non-food objects as `NO PRODUCE DETECTED`), identifies the item, grades ripeness (`Stage 1–7`), updates the linked PostgreSQL batch, and queues urgent markdowns for Stage 5+ spoilage risk.
+**The assistant is read-only.** The `zerospoil-inventory-mcp` server can only run `SELECT` queries and look up fixed guidelines. It cannot edit inventory.
 
-3. **Ask ZeroSpoil Hybrid RAG & Read-Only MCP (`backend/services/rag_service.py`, `backend/mcp_server.py`):**
-   - **Smart LangGraph Routing:** Separates casual greetings (`"hi"`, `"hello"`, `"help"`) from supply-chain queries so greetings never trigger unnecessary SQL lookups.
-   - **Vector + Knowledge Graph Retrieval:** Combines **Scikit-learn TF-IDF** cosine similarity with a **NetworkX Directed Graph** (`Product -> Category -> USDA Guideline -> Optimal Temp`) built over `foodkeeper_seed.json`.
-   - **Dual-Model Resilience:** Synthesizes responses using `gemini-3.8-flash` with automatic fallback to `gemini-3.5-flash-lite` and a deterministic grounded template if API quota or connectivity drops.
+**No made-up numbers.** Answers keep inline citations such as `[PostgreSQL Store Query]` and `[USDA FoodKeeper Guideline ...]`. If the external AI is unavailable, ZeroSpoil falls back to verified, rule-based data.
 
----
+## Tech Stack
 
-## 📂 3. Project Directory Structure
+| Layer | Tools |
+| :--- | :--- |
+| Frontend | React (Vite), Tailwind CSS, Recharts, HTML5 canvas for the first color check |
+| Backend | Python 3, FastAPI, Uvicorn, Pydantic, JWT authentication |
+| Database | PostgreSQL 16 (local or Neon.tech serverless) |
+| AI and retrieval | LangGraph, Google GenAI SDK (`gemini-3.8-flash` with `gemini-3.5-flash-lite` as backup), FastMCP, Scikit-learn (TF-IDF), NetworkX, Pillow, NumPy |
+
+## How It Works
+
+### Inventory reconciliation
+
+Each branch is checked with one simple rule:
+
+$$\text{Opening} + \text{Received} + \text{Transfers In} - \text{Sold} - \text{Waste} - \text{Returns} - \text{Transfers Out} = \text{Expected Closing}$$
+
+The expected closing stock is then compared with the physical count. Each branch is marked `RECONCILED`, or flagged as `OVERSTOCK / AUDIT` when something is off.
+
+### Vision inspection (`backend/services/agents.py`)
+
+**Layer 1: Adaptive color check (under 10 ms, no tokens used).** Pillow and NumPy fix photo orientation, trim 8% off the borders, and ignore white tissue or table backgrounds. An 85th-percentile brightness baseline keeps dim rooms from causing false bruise alerts, while healthy red tomatoes and dark green produce are protected.
+
+**Layer 2: Gemini review (`gemini-3.8-flash`).** The model checks whether real produce is in the photo, and rejects anything else as `NO PRODUCE DETECTED`. It names the item, grades ripeness from Stage 1 to Stage 7, updates the linked batch in PostgreSQL, and queues an urgent markdown for Stage 5 and above.
+
+### Ask ZeroSpoil (`backend/services/rag_service.py`, `backend/mcp_server.py`)
+
+**Smart routing.** LangGraph separates small talk like "hi" or "help" from real supply-chain questions, so greetings never trigger database queries.
+
+**Two ways of finding facts.** TF-IDF similarity search is combined with a NetworkX knowledge graph (`Product -> Category -> USDA Guideline -> Optimal Temp`) built from `foodkeeper_seed.json`.
+
+**Built to keep working.** Answers come from `gemini-3.8-flash`, then `gemini-3.5-flash-lite`, then a grounded template if the API is down or out of quota.
+
+## Project Structure
 
 ```text
 zerospoil/
-├── README.md                           # Full project documentation & setup guide
-├── SS1.png ... SS4.png                 # Platform preview screenshots
+├── README.md
+├── SS1.png ... SS4.png                 # Screenshots
 ├── scripts/
-│   └── verify_compliance.py            # Automated M-01 to M-10 compliance verifier
+│   └── verify_compliance.py            # Runs the M-01 to M-10 compliance checks
 ├── backend/
-│   ├── requirements.txt                # FastAPI, LangGraph, FastMCP, Pillow, NumPy, GenAI
+│   ├── requirements.txt
 │   ├── .env                            # DATABASE_URL, GEMINI_API_KEY, JWT_SECRET
-│   ├── main.py                         # FastAPI app, CORS, startup table init & seeding
-│   ├── database.py                     # PostgreSQL 16 engine, session & env loader
-│   ├── mcp_server.py                   # Single-server read-only FastMCP inventory tools
+│   ├── main.py                         # FastAPI app, CORS, table setup and seeding
+│   ├── database.py                     # PostgreSQL engine, sessions, env loader
+│   ├── mcp_server.py                   # Read-only FastMCP inventory tools
 │   ├── data/
-│   │   └── foodkeeper_seed.json        # USDA FoodKeeper cold-chain & Dhaka handling rules
+│   │   └── foodkeeper_seed.json        # USDA FoodKeeper rules and Dhaka handling notes
 │   └── services/
-│       ├── agents.py                   # Multi-agent orchestration & dual-layer vision engine
-│       └── rag_service.py              # LangGraph Hybrid RAG + NetworkX + Gemini synthesis
+│       ├── agents.py                   # Multi-agent logic and vision engine
+│       └── rag_service.py              # Hybrid RAG, NetworkX, Gemini answers
 └── frontend/
     ├── package.json
-    ├── vercel.json                     # SPA rewrite rules for Vercel deployment
+    ├── vercel.json                     # SPA rewrite rules for Vercel
     ├── vite.config.js
     ├── tailwind.config.js
     └── src/
-        ├── App.jsx                     # Executive Overview, Reconciliation, Smart Allocation & FEFO
+        ├── App.jsx                     # Overview, Reconciliation, Smart Allocation, FEFO
         ├── lib/
-        │   └── api.js                  # REST API client (VITE_API_BASE_URL aware)
+        │   └── api.js                  # REST client (reads VITE_API_BASE_URL)
         └── components/
-            ├── VisionScannerTab.jsx    # Live camera, photo upload, presets & colorimetry bars
-            ├── AskZeroSpoilTab.jsx     # Conversational RAG chat with inline citations
-            ├── GlossaryModal.jsx       # Interactive operational info tooltips
-            └── Icons.jsx               # Custom UI icon set
+            ├── VisionScannerTab.jsx    # Camera, uploads, presets, color bars
+            ├── AskZeroSpoilTab.jsx     # Chat with inline citations
+            ├── GlossaryModal.jsx       # Helpful term tooltips
+            └── Icons.jsx               # Custom icon set
 ```
 
----
+## Data and Knowledge Base
 
-## 🗄️ 4. Database Architecture, USDA Knowledge Base & Calibrated Telemetry
+The PostgreSQL 16 database holds live Dhaka supermarket data next to static USDA FoodKeeper records.
 
-The PostgreSQL 16 database manages live B2B Dhaka supermarket telemetry alongside static **USDA FoodKeeper** reference records:
+**Stores and reconciliation ledger.** Thirty days of calibrated stock flows for Shwapno Dhanmondi 27, Agora Gulshan 2, Meena Bazar Uttara, and Unimart Banani, including a few seeded mismatches you can use to test audits.
 
-- **Stores & Reconciliation Ledger:** Tracks 30-day calibrated operational flows across **Shwapno Dhanmondi 27**, **Agora Gulshan 2**, **Meena Bazar Uttara**, and **Unimart Banani** (including seeded audit discrepancies for live verification).
-- **FEFO Perishable Batches:** Tracks batch codes, product categories, remaining shelf-life hours, quantities (kg), BDT value at risk, and dynamic markdown recommendations.
-- **Smart Allocation Proposals & Audit Logs:** Stores pending/approved/rejected M-09 supplier actions and chronological multi-agent execution logs.
-- **USDA FoodKeeper Seed (`foodkeeper_seed.json`):** Encodes refrigerated/pantry hour ceilings, optimal Celsius cold-chain ranges, spoilage indicators, and Dhaka-specific handling rules.
+**FEFO batches.** Batch codes, categories, remaining shelf-life hours, quantity in kg, BDT value at risk, and markdown suggestions.
 
-### Quick-Test Verification Scenarios
+**Proposals and audit logs.** Pending, approved, and rejected supplier actions, plus a timeline of every agent decision.
 
-| Module | Test Action | Expected Outcome |
+**USDA FoodKeeper seed.** Fridge and pantry time limits, ideal cold-chain temperatures in Celsius, spoilage signs, and Dhaka-specific handling rules.
+
+### Quick test scenarios
+
+| Module | What to try | What you should see |
 | :--- | :--- | :--- |
-| **Ask ZeroSpoil** | Type `"Hi"` | Returns a clean greeting without querying PostgreSQL or dumping unrelated data. |
-| **Ask ZeroSpoil** | Ask *"Which Dhaka supermarket has a reconciliation discrepancy right now?"* | Queries `get_store_reconciliation` via MCP and cites `[PostgreSQL Store Query]`. |
-| **Vision Scanner** | Upload bruised/spotted fruit (Offline Mode) | Adaptive HSV masks neutral backgrounds and flags **Stage 5/6 Spoilage Risk** with accurate `brown_pct`. |
-| **Vision Scanner** | Scan a non-food object (Gemini Assist ON) | `gemini-3.8-flash` overrides colorimetry, returns **`NO PRODUCE DETECTED`**, and protects DB records. |
+| Ask ZeroSpoil | Type `Hi` | A friendly greeting, with no database query and no unrelated data. |
+| Ask ZeroSpoil | Ask "Which Dhaka supermarket has a reconciliation discrepancy right now?" | A `get_store_reconciliation` call through MCP, cited as `[PostgreSQL Store Query]`. |
+| Vision Scanner | Upload a bruised or spotted fruit (offline mode) | Neutral backgrounds are masked, and the item is flagged **Stage 5/6 Spoilage Risk** with an accurate `brown_pct`. |
+| Vision Scanner | Scan a non-food object (Gemini Assist on) | `gemini-3.8-flash` overrides the color check and returns **NO PRODUCE DETECTED**, and no database records are touched. |
 
----
+## Local Setup
 
-## 🚀 5. Complete Local Setup Guide (PostgreSQL, Windows & macOS)
+### What you need
 
-### Prerequisites
+1. Python 3.10 or newer: [python.org/downloads](https://www.python.org/downloads/)
+2. Node.js 18 LTS or newer: [nodejs.org](https://nodejs.org)
+3. PostgreSQL 16: [postgresql.org/download](https://www.postgresql.org/download/)
+4. A free Google AI Studio API key: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 
-1. **Python (v3.10+ recommended):** Download from [https://www.python.org/downloads/](https://www.python.org/downloads/).
-2. **Node.js (v18+ LTS recommended):** Download from [https://nodejs.org](https://nodejs.org).
-3. **PostgreSQL 16:** Download from [https://www.postgresql.org/download/](https://www.postgresql.org/download/).
-4. **Google AI Studio API Key:** Create a free key at [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+### Step 1: Create the database
 
----
+**Windows**
 
-### Step 1: Create the `zerospoil` PostgreSQL Database
-
-#### 🪟 Option A: Windows Users
-1. Install PostgreSQL 16 (keep port **`5432`** and note your `postgres` password).
-2. Open **pgAdmin 4** (or **SQL Shell `psql`**) and create a database named **`zerospoil`**:
+1. Install PostgreSQL 16. Keep port `5432` and remember your `postgres` password.
+2. Open pgAdmin 4 or `psql` and run:
    ```sql
    CREATE DATABASE zerospoil;
    ```
 
-#### 🍎 Option B: macOS Users
-1. Install and start PostgreSQL 16 via Homebrew or Postgres.app:
+**macOS**
+
+1. Install and start PostgreSQL 16:
    ```bash
    brew install postgresql@16
    brew services start postgresql@16
@@ -149,35 +163,33 @@ The PostgreSQL 16 database manages live B2B Dhaka supermarket telemetry alongsid
    psql -U postgres -c "CREATE DATABASE zerospoil;"
    ```
 
----
+### Step 2: Start the backend
 
-### Step 2: Backend Configuration & FastAPI Launch
-
-1. **Clone the repository and open Terminal 1 in the `zerospoil` root folder:**
+1. Clone the project:
    ```bash
-   git clone [https://github.com/Washibro/zerospoil.git](https://github.com/Washibro/zerospoil.git)
+   git clone https://github.com/Washibro/zerospoil.git
    cd zerospoil
    ```
 
-2. **Create and activate a Python virtual environment:**
-   - **macOS / Linux:**
-     ```bash
-     python3 -m venv venv
-     source venv/bin/activate
-     ```
-   - **Windows (PowerShell):**
-     ```powershell
-     python -m venv venv
-     .\venv\Scripts\Activate.ps1
-     ```
+2. Create and activate a virtual environment.
 
-3. **Install backend dependencies:**
+   macOS / Linux:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+   Windows (PowerShell):
+   ```powershell
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
+
+3. Install the dependencies:
    ```bash
    pip install -r backend/requirements.txt
    ```
 
-4. **Configure `backend/.env`:**
-   Create `backend/.env` with your PostgreSQL credentials and Gemini API key:
+4. Create `backend/.env`:
    ```env
    DATABASE_URL=postgresql://postgres:your_password@localhost:5432/zerospoil
    GEMINI_API_KEY=your_google_ai_studio_key
@@ -186,95 +198,92 @@ The PostgreSQL 16 database manages live B2B Dhaka supermarket telemetry alongsid
    FRONTEND_ORIGIN=http://localhost:5173
    ```
 
-5. **Start the FastAPI Backend Server (Port `8000`):**
+5. Run the server on port 8000:
    ```bash
    uvicorn backend.main:app --reload --port 8000
    ```
-   *(Tables and calibrated Dhaka supermarket seed data initialize automatically on first boot. Verify at `http://127.0.0.1:8000/api/health`.)*
+   Tables and sample Dhaka data are created on first launch. To confirm it works, open `http://127.0.0.1:8000/api/health`.
 
----
+### Step 3: Start the frontend
 
-### Step 3: Frontend Setup & Launch
-
-1. **Open Terminal 2** and navigate to the `frontend` folder:
+1. In a second terminal:
    ```bash
    cd frontend
    npm install
    ```
 
-2. **Start the Vite Development Server:**
+2. Start the dev server:
    ```bash
    npm run dev
    ```
 
-3. **Open the Application in Your Browser:**
-   Visit [**http://localhost:5173**](http://localhost:5173).
+3. Open [http://localhost:5173](http://localhost:5173) in your browser.
 
----
+## Deployment
 
-## 🌐 6. Cloud & Production Deployment Guide
+### 1. Database on Neon.tech
 
-### 1. Managed PostgreSQL 16 Database (Neon.tech)
-1. Create a project named **`zerospoil-db`** on [Neon.tech](https://neon.tech) and copy the connection string (`postgresql://...?sslmode=require`).
+Create a project called `zerospoil-db` on [Neon.tech](https://neon.tech) and copy the connection string (`postgresql://...?sslmode=require`).
 
-### 2. Backend API Deployment (Render.com)
-1. Connect **`Washibro/zerospoil`** (branch: `master`) as a **Web Service** on [Render.com](https://render.com).
-2. **Root Directory:** *(leave blank)*
+### 2. Backend on Render
+
+1. Connect `Washibro/zerospoil` (branch `master`) as a Web Service on [Render](https://render.com).
+2. Leave **Root Directory** blank.
 3. **Build Command:** `pip install -r backend/requirements.txt`
 4. **Start Command:** `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-5. **Environment Variables:** `DATABASE_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL=gemini-3.8-flash`, `JWT_SECRET`, and `FRONTEND_ORIGIN` (set to your live Vercel URL once deployed).
+5. Add these environment variables: `DATABASE_URL`, `GEMINI_API_KEY`, `GEMINI_MODEL=gemini-3.8-flash`, `JWT_SECRET`, and `FRONTEND_ORIGIN` (use your Vercel URL once it is live).
 
-### 3. Frontend Deployment (Vercel.com)
-1. Import **`Washibro/zerospoil`** on [Vercel.com](https://vercel.com).
-2. **Root Directory:** `frontend` | **Framework Preset:** `Vite` | **Build Command:** `npm run build` | **Output Directory:** `dist`
-3. **Environment Variable:** `VITE_API_BASE_URL=https://your-render-service.onrender.com` *(no trailing slash)*.
-4. Update `FRONTEND_ORIGIN` on Render with your live `https://*.vercel.app` URL to enable production CORS and HTTPS live camera access on desktop and mobile browsers.
+### 3. Frontend on Vercel
 
----
+1. Import `Washibro/zerospoil` on [Vercel](https://vercel.com).
+2. Use these settings:
+   - **Root Directory:** `frontend`
+   - **Framework Preset:** Vite
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+3. Add the environment variable `VITE_API_BASE_URL=https://your-render-service.onrender.com` (no trailing slash).
+4. Go back to Render and set `FRONTEND_ORIGIN` to your live `https://*.vercel.app` URL. This turns on production CORS and lets the live camera work over HTTPS on desktop and mobile.
 
-## 🔌 7. REST API & MCP Tool Reference
+## API Reference
 
-### Core FastAPI Endpoints
+### FastAPI endpoints
 
-| Method | Endpoint | Description |
+| Method | Endpoint | What it does |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Verifies API health, database connectivity, and service status. |
-| `GET` | `/api/dashboard` | Returns Executive Overview KPIs, reconciliation ledger, FEFO batches, proposals, and audit trail. |
-| `POST` | `/api/vision/inspect` | Runs dual-layer produce grading (adaptive HSV colorimetry + optional `gemini-3.8-flash` override) and syncs shelf life. |
-| `POST` | `/api/rag/ask` | Executes the LangGraph Hybrid RAG + Read-Only MCP pipeline for Ask ZeroSpoil queries. |
-| `POST` | `/api/proposals/{id}/decision` | Records M-09 Human-in-the-Loop supplier Approve/Reject actions. |
+| `GET` | `/api/health` | Checks API status and database connection. |
+| `GET` | `/api/dashboard` | Returns overview KPIs, the reconciliation ledger, FEFO batches, proposals, and the audit trail. |
+| `POST` | `/api/vision/inspect` | Grades produce with the color check and optional Gemini review, then updates shelf life. |
+| `POST` | `/api/rag/ask` | Runs the Hybrid RAG and read-only MCP pipeline for Ask ZeroSpoil. |
+| `POST` | `/api/proposals/{id}/decision` | Saves a supplier's Approve or Reject choice (M-09). |
 
-### Read-Only MCP Tools (`zerospoil-inventory-mcp`)
+### Read-only MCP tools (`zerospoil-inventory-mcp`)
 
-| MCP Tool Name | Permission | Description |
+| Tool | Access | What it does |
 | :--- | :--- | :--- |
-| `get_fefo_expiring_batches` | `READ-ONLY SELECT` | Queries PostgreSQL 16 for batches expiring within $\le 48\text{h}$ with optional Dhaka store filters. |
-| `get_store_reconciliation` | `READ-ONLY SELECT` | Runs the Universal Inventory Reconciliation audit across Shwapno, Agora, Meena Bazar, and Unimart. |
-| `query_usda_foodkeeper` | `READ-ONLY` | Retrieves USDA FoodKeeper shelf-life ceilings, temperature limits, and Dhaka handling rules. |
+| `get_fefo_expiring_batches` | Read-only `SELECT` | Finds batches expiring within 48 hours, with optional store filters. |
+| `get_store_reconciliation` | Read-only `SELECT` | Runs the reconciliation audit across Shwapno, Agora, Meena Bazar, and Unimart. |
+| `query_usda_foodkeeper` | Read-only | Looks up shelf-life limits, temperature ranges, and Dhaka handling rules. |
 
----
+## Troubleshooting
 
-## 🛠️ 8. Troubleshooting FAQ (Windows & macOS)
-
-| Issue / Error Message | Cause | Exact Solution |
+| Problem | Why it happens | How to fix it |
 | :--- | :--- | :--- |
-| **Live camera blocked on mobile LAN IP (`http://192.168...`)** | Mobile browsers restrict `getUserMedia` to HTTPS or `localhost`. | Use **Upload Shelf / Crate Photo** over local HTTP, or deploy to **Vercel (`https://`)** for native live camera streaming. |
-| **Camera permission denied or busy** | Browser camera permission is blocked or another tab/app holds the webcam. | Allow Camera in browser site settings and OS Privacy settings, and close other apps using the camera. |
-| **Ask ZeroSpoil falls back to rigid context text** | `GEMINI_API_KEY` is missing from `backend/.env` or `uvicorn` was not restarted after editing `.env`. | Add your key to `backend/.env` and restart `uvicorn backend.main:app --reload --port 8000`. |
-| **Non-food green object graded as fresh** | **Gemini Multimodal Assist** was unchecked, falling back to object-blind pixel colorimetry. | Enable **Gemini Multimodal Assist** so `gemini-3.8-flash` performs semantic produce verification. |
-| **`Connection refused` on port `5432`** | Local PostgreSQL 16 service is not running. | **Windows:** Start `postgresql-x64-16` in `services.msc`.<br>**macOS:** Run `brew services start postgresql@16`. |
+| Live camera is blocked on a phone using a LAN address (`http://192.168...`) | Mobile browsers only allow camera access on HTTPS or `localhost`. | Use **Upload Shelf / Crate Photo** over HTTP, or deploy to Vercel (`https://`) for live camera. |
+| Camera permission denied or busy | The browser blocked the camera, or another app or tab is using it. | Allow the camera in your browser and OS privacy settings, and close other apps that use it. |
+| Ask ZeroSpoil gives plain, rigid answers | `GEMINI_API_KEY` is missing, or `uvicorn` was not restarted after editing `.env`. | Add the key to `backend/.env`, then restart `uvicorn backend.main:app --reload --port 8000`. |
+| A green non-food object is graded as fresh | **Gemini Multimodal Assist** is off, so only pixel colors are checked. | Turn on **Gemini Multimodal Assist** so `gemini-3.8-flash` can confirm the item is real produce. |
+| `Connection refused` on port 5432 | PostgreSQL 16 is not running. | **Windows:** start `postgresql-x64-16` in `services.msc`. **macOS:** run `brew services start postgresql@16`. |
 
----
+## License and Data Notice
 
-## 📜 9. License & Data Disclosure
+ZeroSpoil is an AI supply-chain prototype built for the **Food Waste Zero** challenge in the **FoodSphere** track. Store inventory, batch codes, and 30-day sales and waste history are calibrated synthetic Dhaka retail data, paired with real USDA FoodKeeper storage and temperature guidelines. A production rollout would need live supermarket ERP and POS feeds and verified cold-chain IoT sensors.
 
-**ZeroSpoil** is an AI supply-chain engineering prototype developed for the **Food Waste Zero** challenge under the **FoodSphere** track. Store inventory figures, batch codes, and 30-day sales/waste histories are **calibrated synthetic Dhaka retail telemetry** paired with authentic **USDA FoodKeeper** storage and temperature guidelines. Production deployment requires integrating live supermarket ERP/POS feeds and verified cold-chain IoT sensors.
+## Acknowledgements
 
----
+ZeroSpoil was built with the help of AI tools across the whole project, including system design, database modeling, the vision pipeline, Hybrid RAG, and full-stack development.
 
-## 🤖 10. Project Development and AI Assistance Acknowledgements
+**Gemini** was the main AI coding partner. It helped with core code, the multi-agent and Hybrid RAG design, color-check tuning, and debugging.
 
-The development of **ZeroSpoil** involved the effective integration of Artificial Intelligence (AI) and modern technologies across the project lifecycle, including system architecture, database modeling, vision pipeline engineering, Hybrid RAG orchestration, and full-stack implementation.
+**Claude** helped refine the project documentation, including the README's structure, wording, and overall polish.
 
-- **Primary AI Architect and Coding Assistant:** **Gemini** was primarily used for core code generation, multi-agent and Hybrid RAG architecture design, adaptive HSV colorimetry tuning, and full-stack debugging throughout the project.
-- **Research and Development (R&D):** **Antigravity** and **ChatGPT** were used as R&D assistants for concept ideation, perishable supply-chain workflow analysis, and technical documentation research.
+**Antigravity** and **ChatGPT** supported research, from early ideas and supply-chain workflow analysis to technical documentation.
