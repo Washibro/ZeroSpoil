@@ -6,7 +6,7 @@
 </p>
 <p align="center">
   <img src="SS3.png" width="45%">
-  <img src="SS4.png" width="45%">
+  <img src="SS4.png" width="60%">
 </p>
 
 **AI-Powered B2B Perishable Supply-Chain & Food Waste Reduction Platform for Dhaka Supermarkets**  
